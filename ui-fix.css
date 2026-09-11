@@ -1,0 +1,64 @@
+/* Compact play-calling + clearer passing controls */
+.playOverlay{
+  left:50%!important;
+  right:auto!important;
+  transform:translateX(-50%);
+  width:min(94%,820px)!important;
+  bottom:10px!important;
+  padding:8px 10px!important;
+  border-radius:14px!important;
+  max-height:32%;
+  overflow:auto;
+}
+.playOverlay h3{margin:4px 0!important;font-size:14px}
+.playTop{font-size:10px!important;margin-bottom:3px}
+.playCards{gap:5px!important}
+.playCard{min-height:58px!important;padding:5px 6px!important;border-radius:9px!important}
+.playCard b{font-size:10px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.playCard span{font-size:9px;color:#9cabc8}
+.playCard canvas{height:20px!important;margin-top:1px!important}
+.clockActions{margin-top:5px!important;gap:4px!important}
+.clockActions button{min-height:28px!important;padding:4px 7px!important;font-size:9px!important}
+.playOverlay>small{font-size:9px!important}
+
+/* Desktop must use SPACE after choosing a play. Keep the existing button only for touch devices. */
+.snapBtn{display:none!important}
+
+.hotfixSelectedBar{display:none;align-items:center;justify-content:space-between;gap:10px;min-height:48px}
+.playOverlay.play-selected h3,
+.playOverlay.play-selected .playCards,
+.playOverlay.play-selected .clockActions,
+.playOverlay.play-selected>small{display:none!important}
+.playOverlay.play-selected .hotfixSelectedBar{display:flex}
+.hotfixSelectedBar small{display:block;color:#91a0bb;font-size:8px;font-weight:900;letter-spacing:.12em}
+.hotfixSelectedBar strong{display:block;color:#c8ff4f;font-size:15px}
+.spaceSnap{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:950;letter-spacing:.08em}
+.spaceSnap kbd{display:inline-flex;align-items:center;justify-content:center;min-width:58px;height:30px;padding:0 8px;border-radius:7px;background:#ffc84a;color:#1c1605;border:1px solid #ffe29b;box-shadow:0 3px 0 #70500d;font:950 12px system-ui}
+#hotfixChangePlay{min-height:30px;padding:4px 8px;border-radius:8px;background:#1c2946;color:#dce5f7;border:1px solid #3a5077;font-size:9px;font-weight:900}
+
+.passHotfix{position:absolute;right:12px;top:12px;z-index:8;display:flex;align-items:center;gap:4px;background:#07101ee8;border:1px solid #4b6289;border-radius:11px;padding:6px;box-shadow:0 8px 24px #0008}
+.passHotfix>span{font-size:9px;font-weight:950;color:#dce5f7;margin-right:2px}
+.passHotfix button{min-width:45px;min-height:30px;padding:4px 6px;border-radius:7px;background:#c8ff4f;color:#142005;border:1px solid #e8ffa8;font-size:10px;font-weight:950}
+.receiverPad button{min-width:64px!important;font-size:11px!important}
+
+@media(pointer:coarse){
+  .playOverlay.play-selected .snapBtn{display:inline-flex!important;align-items:center;justify-content:center;float:none!important;margin:0!important;min-height:32px!important;padding:4px 8px!important;font-size:9px!important}
+  .spaceSnap{display:none}
+}
+@media(max-width:780px){
+  .playOverlay{width:96%!important;max-height:38%;bottom:5px!important;padding:6px!important}
+  .playCards{grid-template-columns:repeat(2,1fr)!important}
+  .playCard{min-height:48px!important}
+  .playCard canvas{height:16px!important}
+  .playCard span{display:none}
+  .hotfixSelectedBar strong{font-size:12px}
+  .passHotfix{right:7px;top:7px;padding:4px}
+  .passHotfix button{min-width:36px;min-height:27px;font-size:9px;padding:3px}
+}
+@media(max-width:520px){
+  .playOverlay{max-height:34%}
+  .playTop{font-size:8px!important}
+  .clockActions button{padding:3px 5px!important}
+  #hotfixChangePlay{padding:3px 5px}
+  .passHotfix>span{display:none}
+}
