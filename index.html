@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#10172a">
+  <title>Campus Football: Two-Minute Drill</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <button id="homeBtn" class="iconBtn hidden" aria-label="Main menu">🏠</button>
+    <div class="brandSmall">CAMPUS FOOTBALL</div>
+    <button id="soundBtn" class="iconBtn" aria-label="Toggle sound">🔊</button>
+  </header>
+
+  <main>
+    <section id="menu" class="screen active">
+      <div class="hero">
+        <div class="footballMark">🏈</div>
+        <p class="eyebrow">CAMPUS FOOTBALL</p>
+        <h1>TWO-MINUTE<br><span>DRILL</span></h1>
+        <p class="tagline">Two minutes. One drive. No excuses.</p>
+        <div class="menuStats">
+          <div><strong id="menuBest">0</strong><span>BEST SCORE</span></div>
+          <div><strong id="menuStreak">0</strong><span>BEST STREAK</span></div>
+          <div><strong id="menuWins">0</strong><span>COMEBACKS</span></div>
+        </div>
+      </div>
+      <div class="menuButtons">
+        <button data-action="start" class="menuPrimary">START DRIVE <b>→</b></button>
+        <button data-action="streak">🔥 STREAK MODE</button>
+        <button data-action="challenges">⚡ CHALLENGE MODE</button>
+        <button data-action="practice">🏟️ PRACTICE</button>
+        <button data-action="records">🏆 HIGH SCORES</button>
+        <button data-action="how">🎮 HOW TO PLAY</button>
+        <button data-action="settings">⚙️ SETTINGS</button>
+      </div>
+      <p class="finePrint">Original fictional teams, characters, stadiums, and audio. No NFL/NCAA assets.</p>
+    </section>
+
+    <section id="scenario" class="screen">
+      <div class="scenarioCard">
+        <p class="eyebrow">FINAL DRIVE</p>
+        <h2 id="scenarioScore">YOU TRAIL 24–20</h2>
+        <div class="scenarioClock" id="scenarioClock">1:32</div>
+        <div class="scenarioGrid">
+          <div><span>BALL</span><strong id="scenarioBall">OWN 25</strong></div>
+          <div><span>TIMEOUTS</span><strong id="scenarioTO">2</strong></div>
+          <div><span>WEATHER</span><strong id="scenarioWeather">CLEAR</strong></div>
+          <div><span>DEFENSE</span><strong id="scenarioDefense">JUNIOR</strong></div>
+        </div>
+        <div class="opponentStrip">
+          <span id="scenarioOpponentIcon">🦉</span>
+          <div><small>OPPONENT</small><strong id="scenarioOpponent">ALL-NIGHTER UNIVERSITY</strong></div>
+        </div>
+        <p id="scenarioFlavor" class="scenarioFlavor">Go win the game.</p>
+        <button id="startDriveBtn" class="menuPrimary">START DRIVE <b>→</b></button>
+        <button class="ghost" data-action="menu">BACK</button>
+      </div>
+    </section>
+
+    <section id="challenges" class="screen panelScreen">
+      <div class="sectionHead">
+        <p class="eyebrow">SPECIAL SITUATIONS</p>
+        <h2>CHALLENGE MODE</h2>
+        <p>Pick your problem. The clock is not your friend.</p>
+      </div>
+      <div id="challengeGrid" class="challengeGrid"></div>
+      <button class="ghost wide" data-action="menu">BACK</button>
+    </section>
+
+    <section id="game" class="screen gameScreen">
+      <div class="scorebar">
+        <div class="teamScore user">
+          <small>CAMPUS U</small><strong id="userScore">20</strong>
+        </div>
+        <div class="centerScore">
+          <div id="gameClock">1:32</div>
+          <span id="downText">1ST & 10</span>
+        </div>
+        <div class="teamScore cpu">
+          <small id="oppShort">MUGS</small><strong id="oppScore">24</strong>
+        </div>
+      </div>
+
+      <div id="fieldWrap">
+        <canvas id="field" width="1000" height="650" aria-label="Campus Football game field"></canvas>
+        <div id="callout" class="callout hidden"></div>
+        <div id="pauseOverlay" class="modalOverlay hidden">
+          <div class="modalCard">
+            <p class="eyebrow">TIMEOUT</p>
+            <h2>PAUSED</h2>
+            <button id="resumeBtn" class="menuPrimary">RESUME</button>
+            <button class="ghost" data-action="menu">QUIT TO MENU</button>
+          </div>
+        </div>
+
+        <div id="playOverlay" class="playOverlay">
+          <div class="playTop">
+            <div><span id="fieldPositionText">OWN 25</span><b id="clockState">CLOCK STOPPED</b></div>
+            <div class="timeouts">TIMEOUTS <span id="timeoutDots">● ●</span></div>
+          </div>
+          <h3>CALL A PLAY</h3>
+          <div id="playCards" class="playCards"></div>
+          <div class="clockActions">
+            <button id="timeoutBtn">TIMEOUT</button>
+            <button id="hurryBtn">HURRY UP</button>
+            <button id="spikeBtn">SPIKE</button>
+            <button id="fgBtn">FIELD GOAL</button>
+          </div>
+          <small>Pick a play, then press SPACE or SNAP.</small>
+          <button id="snapBtn" class="snapBtn">SNAP</button>
+        </div>
+
+        <div id="kickOverlay" class="modalOverlay hidden">
+          <div class="kickCard">
+            <p class="eyebrow" id="kickTitle">FIELD GOAL</p>
+            <h2 id="kickDistance">47 YARDS</h2>
+            <p id="kickInstruction">Stop the marker in the center.</p>
+            <div class="kickMeter"><div class="sweet"></div><div id="kickMarker" class="kickMarker"></div></div>
+            <div id="kickPowerWrap" class="kickMeter power hidden"><div class="sweet"></div><div id="powerMarker" class="kickMarker"></div></div>
+            <button id="kickBtn" class="menuPrimary">LOCK ACCURACY</button>
+          </div>
+        </div>
+
+        <div id="conversionOverlay" class="modalOverlay hidden">
+          <div class="modalCard">
+            <p class="eyebrow">TOUCHDOWN</p>
+            <h2 id="conversionScore">26–24</h2>
+            <p id="conversionNeed">Take the lead.</p>
+            <div class="twoCol">
+              <button id="xpBtn" class="menuPrimary">KICK +1</button>
+              <button id="twoBtn">GO FOR 2</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="gameHud">
+        <div><span>DRIVE SCORE</span><strong id="driveScore">0</strong></div>
+        <div><span>PLAY</span><strong id="playName">—</strong></div>
+        <div><span>STREAK</span><strong id="driveStreak">0</strong></div>
+      </div>
+
+      <div id="touchControls" class="touchControls">
+        <div class="dpad">
+          <button data-move="up">▲</button>
+          <div><button data-move="left">◀</button><button data-move="down">▼</button><button data-move="right">▶</button></div>
+        </div>
+        <div id="receiverPad" class="receiverPad">
+          <button data-receiver="0">A</button><button data-receiver="1">B</button>
+          <button data-receiver="2">C</button><button data-receiver="3">D</button>
+        </div>
+        <div id="runnerPad" class="runnerPad hidden">
+          <button data-skill="juke">JUKE</button>
+          <button data-skill="spin">SPIN</button>
+          <button data-skill="dive">DIVE</button>
+        </div>
+        <button id="sprintBtn" class="sprintBtn">SPRINT</button>
+      </div>
+
+      <div class="gameBottom">
+        <span>Keyboard: WASD/Arrows • 1–4 throw • Shift sprint • E juke • Q spin • Space snap/dive • P pause</span>
+      </div>
+    </section>
+
+    <section id="result" class="screen panelScreen">
+      <div class="resultHero">
+        <div id="resultIcon" class="resultIcon">🏆</div>
+        <p class="eyebrow" id="resultEyebrow">DRIVE COMPLETE</p>
+        <h2 id="resultTitle">GAME WINNER!</h2>
+        <p id="resultSubtitle">That defense apparently skipped lecture.</p>
+        <div class="finalScore">
+          <div><small>CAMPUS U</small><strong id="resultUserScore">27</strong></div>
+          <span>FINAL</span>
+          <div><small id="resultOppName">MUGS</small><strong id="resultOppScore">24</strong></div>
+        </div>
+      </div>
+      <div class="statGrid">
+        <div><span>DRIVE SCORE</span><strong id="statScore">0</strong></div>
+        <div><span>TIME LEFT</span><strong id="statTime">0:00</strong></div>
+        <div><span>PLAYS</span><strong id="statPlays">0</strong></div>
+        <div><span>PASS YDS</span><strong id="statPass">0</strong></div>
+        <div><span>RUSH YDS</span><strong id="statRush">0</strong></div>
+        <div><span>COMP %</span><strong id="statComp">0%</strong></div>
+        <div><span>LONGEST PLAY</span><strong id="statLong">0</strong></div>
+        <div><span>4TH DOWN</span><strong id="statFourth">0/0</strong></div>
+      </div>
+      <div id="bonusList" class="bonusList"></div>
+      <div class="resultButtons">
+        <button id="runBackBtn" class="menuPrimary">RUN IT BACK</button>
+        <button id="nextDriveBtn">NEXT DRIVE</button>
+        <button class="ghost" data-action="menu">MAIN MENU</button>
+      </div>
+    </section>
+
+    <section id="records" class="screen panelScreen">
+      <div class="sectionHead"><p class="eyebrow">LOCAL RECORD BOOK</p><h2>HIGH SCORES</h2><p>Saved only in this browser.</p></div>
+      <div id="recordGrid" class="recordGrid"></div>
+      <div class="achieveBox"><h3>ACHIEVEMENTS</h3><div id="achievementGrid" class="achievementGrid"></div></div>
+      <button id="resetRecordsBtn" class="danger">RESET RECORDS</button>
+      <button class="ghost wide" data-action="menu">BACK</button>
+    </section>
+
+    <section id="how" class="screen panelScreen">
+      <div class="sectionHead"><p class="eyebrow">THE PLAYBOOK</p><h2>HOW TO PLAY</h2><p>Get downfield before the clock hits 0:00.</p></div>
+      <div class="howGrid">
+        <article><h3>🏈 QB</h3><p><b>WASD / Arrows</b> move</p><p><b>1–4</b> throw to A–D</p><p><b>Shift</b> scramble</p><p><b>Q</b> throw away before crossing the line</p><p><b>Space</b> snap</p></article>
+        <article><h3>⚡ BALL CARRIER</h3><p><b>WASD / Arrows</b> run</p><p><b>Shift</b> sprint</p><p><b>E</b> juke</p><p><b>Q</b> spin</p><p><b>Space</b> dive</p></article>
+        <article><h3>⏱ CLOCK</h3><p>Tackles in bounds keep it moving. Incompletions and going out of bounds stop it. Use <b>TIMEOUT</b>, <b>HURRY UP</b>, or <b>SPIKE</b> when needed.</p></article>
+        <article><h3>🎯 PASSING</h3><p>Receivers A–D run the routes shown. Throw before the break to lead them. Tight-window completions earn more points.</p></article>
+        <article><h3>📱 MOBILE</h3><p>Use the directional pad, A–D receiver buttons, SPRINT, and the runner skill buttons. Landscape works best.</p></article>
+        <article><h3>🏆 WIN</h3><p>Take the lead before time expires. Convert fourth downs, reach field-goal range, and make the final possession count.</p></article>
+      </div>
+      <button class="ghost wide" data-action="menu">BACK</button>
+    </section>
+
+    <section id="settings" class="screen panelScreen">
+      <div class="sectionHead"><p class="eyebrow">GAME PLAN</p><h2>SETTINGS</h2></div>
+      <div class="settingsList">
+        <label><span>Sound</span><input id="setSound" type="checkbox"></label>
+        <label><span>Screen shake</span><input id="setShake" type="checkbox"></label>
+        <label><span>Reduced motion</span><input id="setMotion" type="checkbox"></label>
+        <label><span>Show touch controls</span><input id="setTouch" type="checkbox"></label>
+        <label><span>Difficulty</span><select id="setDifficulty"><option>Freshman</option><option>Junior</option><option>Senior</option><option>Graduate</option></select></label>
+      </div>
+      <button class="ghost wide" data-action="menu">BACK</button>
+    </section>
+  </main>
+</div>
+<script src="game.js"></script>
+</body>
+</html>
