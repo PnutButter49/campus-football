@@ -1,0 +1,66 @@
+(()=>{"use strict";
+const C=window.CF={};
+C.$=s=>document.querySelector(s);C.$$=s=>[...document.querySelectorAll(s)];
+C.canvas=C.$('#field');C.ctx=C.canvas.getContext('2d');C.W=C.canvas.width;C.H=C.canvas.height;
+C.PASS_KEYS=['A','S','D','F'];C.PASS_MAP={a:0,s:1,d:2,f:3};C.keys={};
+C.OPP=[
+{name:'Procrastination Tech',short:'DELAY',icon:'⏳',color:'#ef6a5b'},
+{name:'Coffee State',short:'MUGS',icon:'☕',color:'#8b5a2b'},
+{name:'Parking State',short:'METERS',icon:'🅿️',color:'#ffb34f'},
+{name:'Student Debt University',short:'LOANS',icon:'💸',color:'#50b7ff'},
+{name:'Group Project College',short:'RIDERS',icon:'🧑‍🤝‍🧑',color:'#b577ff'},
+{name:'Finals State',short:'EXAMS',icon:'📝',color:'#ff5a84'}];
+C.STADIUMS=[
+{name:'CAMPUS QUAD',sky:'#7bc8f6',stands:'#39486c',field:'#26743e',sign:'GO TEAM! I THINK!'},
+{name:'DORM BOWL',sky:'#f4a66a',stands:'#7b4d42',field:'#2f7547',sign:'QUIET HOURS START AT 10'},
+{name:'PARKING LOT STADIUM',sky:'#98b4cb',stands:'#454b57',field:'#39794b',sign:'EVENT PARKING — $97'},
+{name:'LIBRARY FIELD',sky:'#1c2740',stands:'#3d2f34',field:'#2e6c40',sign:'TOUCHDOWNS BELOW 40 DECIBELS'},
+{name:'FINALS FIELD',sky:'#6d5c96',stands:'#45395d',field:'#326f45',sign:'THIS WILL BE ON THE FINAL'},
+{name:'GRADUATION STADIUM',sky:'#6ac8f2',stands:'#314565',field:'#2f814a',sign:'CLASS DISMISSED'}];
+C.PLAYS=[
+{id:'slants',name:'SLANTS',type:'pass',routes:[[-10,18],[-4,22],[4,22],[10,18]],desc:'Quick middle'},
+{id:'cross',name:'CAMPUS CROSS',type:'pass',routes:[[15,26],[8,30],[-8,30],[-15,26]],desc:'Crossing routes'},
+{id:'out',name:'SIDELINE OUT',type:'pass',routes:[[-5,20],[-13,24],[13,24],[5,20]],desc:'Stop the clock'},
+{id:'verts',name:'FOUR VERTICALS',type:'pass',routes:[[0,48],[0,50],[0,50],[0,48]],desc:'Take the top off'},
+{id:'curl',name:'CURL ROUTES',type:'pass',routes:[[0,18],[0,23],[0,23],[0,18]],curl:true,desc:'Safe intermediate'},
+{id:'screen',name:'SCREEN PASS',type:'pass',routes:[[6,8],[4,11],[-4,11],[-6,8]],screen:true,desc:'Get it out fast'},
+{id:'dive',name:'HB DIVE',type:'run',run:'inside',desc:'North & south'},
+{id:'sweep',name:'QUAD SWEEP',type:'run',run:'outside',desc:'Race to the edge'},
+{id:'option',name:'OPTION',type:'run',run:'option',desc:'QB decides'},
+{id:'hail',name:'HAIL MARY',type:'pass',routes:[[2,58],[0,60],[0,60],[-2,58]],desc:'Send everybody'}];
+C.COVERAGES=['COVER 2','COVER 3','COVER 4','COVER 2 MAN'];
+C.CHALLENGES=[
+{title:'HAIL MARY',desc:'Down 5 • 0:08 • midfield',setup:{diff:5,time:8,yard:50,timeouts:0,down:1,toGo:10}},
+{title:'4TH & FOREVER',desc:'4th & 20 • game on the line',setup:{diff:4,time:22,yard:52,timeouts:1,down:4,toGo:20}},
+{title:'NO TIMEOUTS',desc:'Drive 80 yards • 0:55',setup:{diff:4,time:55,yard:20,timeouts:0,down:1,toGo:10}},
+{title:'FIELD GOAL RANGE',desc:'Down 2 • 0:32 • own 45',setup:{diff:2,time:32,yard:45,timeouts:0,down:1,toGo:10}},
+{title:'BACKED UP',desc:'Own 2 • 1:12 • one timeout',setup:{diff:4,time:72,yard:2,timeouts:1,down:1,toGo:10}},
+{title:'GO FOR TWO',desc:'Down 6 • 0:45 • own 35',setup:{diff:6,time:45,yard:35,timeouts:1,down:1,toGo:10}},
+{title:'PERFECT DRIVE',desc:'Win without an incompletion',setup:{diff:4,time:90,yard:25,timeouts:2,down:1,toGo:10}},
+{title:'UPSET ALERT',desc:'Hardest defense • 1:15',setup:{diff:5,time:75,yard:20,timeouts:1,down:1,toGo:10,forceDifficulty:'Graduate'}}];
+C.ACH=[['clutch','CLUTCH','Win with fewer than 5 seconds left'],['office','OFFICE HOURS','Score with 0:00 showing'],['fourth','4TH & FOREVER','Convert 4th & 15+'],['perfect','PERFECT ATTENDANCE','Complete 10 passes in a row'],['allnighter','ALL-NIGHTER','Win 5 scenarios consecutively'],['dean',"DEAN'S LIST",'Win 10 scenarios consecutively'],['hail','HAIL MARY','Win on a 50+ yard pass']];
+C.DIFF={Freshman:{def:.86,rush:.80,catch:1.10},Junior:{def:1,rush:1,catch:1},Senior:{def:1.10,rush:1.10,catch:.96},Graduate:{def:1.20,rush:1.18,catch:.92}};
+C.load=(k,f)=>{try{return JSON.parse(localStorage.getItem(k))||f}catch{return f}};
+C.settings=C.load('cf_settings',{sound:true,shake:true,motion:false,touch:true,difficulty:'Junior'});
+C.records=C.load('cf_records',{bestScore:0,bestStreak:0,wins:0,longTD:0,longFG:0,bestPass:0,bestRush:0,achievements:[],currentStreak:0});
+C.mode='start';C.scenario=null;C.game=null;C.currentChallenge=null;C.raf=0;C.last=0;C.audio=null;
+C.save=()=>{localStorage.setItem('cf_settings',JSON.stringify(C.settings));localStorage.setItem('cf_records',JSON.stringify(C.records))};
+C.clamp=(n,a,b)=>Math.max(a,Math.min(b,n));C.rand=(a,b)=>a+Math.random()*(b-a);C.pick=a=>a[Math.floor(Math.random()*a.length)];
+C.fmtTime=s=>{s=Math.max(0,Math.ceil(s));return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`};
+C.fieldLabel=y=>{const n=Math.round(y);if(n<50)return `OWN ${Math.max(1,n)}`;if(n===50)return '50';return `OPP ${Math.max(1,100-n)}`};
+C.difficulty=()=>C.DIFF[C.scenario?.difficulty||C.settings.difficulty];
+C.show=id=>{C.$$('.screen').forEach(x=>x.classList.remove('active'));C.$('#'+id).classList.add('active');C.$('#homeBtn').classList.toggle('hidden',id==='menu');if(id!=='game'){cancelAnimationFrame(C.raf);C.raf=0}};
+C.callout=(text,ms=750)=>{const e=C.$('#callout');if(!e)return;e.textContent=text;e.classList.remove('hidden');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.add('hidden'),ms)};
+C.beep=(kind='tap')=>{if(!C.settings.sound)return;try{C.audio=C.audio||new(window.AudioContext||window.webkitAudioContext)();const o=C.audio.createOscillator(),g=C.audio.createGain(),t=C.audio.currentTime;const f=kind==='td'?540:kind==='bad'?105:kind==='catch'?720:kind==='snap'?220:kind==='fg'?640:360;o.type=kind==='bad'?'sawtooth':'square';o.frequency.value=f;g.gain.setValueAtTime(.04,t);g.gain.exponentialRampToValueAtTime(.001,t+(kind==='td'?.28:.08));o.connect(g);g.connect(C.audio.destination);o.start(t);o.stop(t+(kind==='td'?.28:.08))}catch{}};
+C.shake=()=>{if(!C.settings.shake||C.settings.motion)return;document.body.classList.remove('shake');void document.body.offsetWidth;document.body.classList.add('shake');setTimeout(()=>document.body.classList.remove('shake'),220)};
+C.initUI=()=>{const po=C.$('#playOverlay');if(!C.$('#hotfixSelectedBar')){const bar=document.createElement('div');bar.id='hotfixSelectedBar';bar.className='hotfixSelectedBar';bar.innerHTML='<div><small>SELECTED PLAY</small><strong id="hotfixPlayName">—</strong></div><div class="spaceSnap"><kbd>SPACE</kbd><span>SNAP</span></div><button type="button" id="hotfixChangePlay">CHANGE PLAY</button>';po.append(bar);C.$('#hotfixChangePlay').onclick=()=>po.classList.remove('play-selected')}if(!C.$('#passHotfix')){const pad=document.createElement('div');pad.id='passHotfix';pad.className='passHotfix hidden';pad.innerHTML='<span>THROW</span>'+C.PASS_KEYS.map((k,i)=>`<button type="button" data-v2-pass="${i}">${k}</button>`).join('');C.$('#fieldWrap').append(pad);pad.addEventListener('pointerdown',e=>{const b=e.target.closest('[data-v2-pass]');if(b){e.preventDefault();C.throwTo?.(Number(b.dataset.v2Pass))}})}if(!C.$('#coverageBadge')){const badge=document.createElement('div');badge.id='coverageBadge';badge.className='passHotfix hidden';badge.style.left='12px';badge.style.right='auto';badge.innerHTML='<span>DEFENSE</span><b>—</b>';C.$('#fieldWrap').append(badge)}C.$$('[data-receiver]').forEach((b,i)=>b.textContent=C.PASS_KEYS[i]);const bottom=C.$('.gameBottom span');if(bottom)bottom.textContent='Arrows move • A/S/D/F throw • Space snap • Shift sprint • E juke • Q spin/throw away • P pause';const how=C.$$('#how .howGrid article');if(how[0])how[0].innerHTML='<h3>🏈 QB</h3><p><b>Arrow Keys only</b> move</p><p><b>SPACE</b> snap after selecting a play</p><p><b>A / S / D / F</b> throw to the four receivers</p><p><b>Shift</b> scramble faster</p><p><b>Q</b> throw away before crossing the line</p>';if(how[1])how[1].innerHTML='<h3>⚡ BALL CARRIER</h3><p><b>Arrow Keys only</b> run</p><p><b>Shift</b> sprint</p><p><b>E</b> juke</p><p><b>Q</b> spin</p><p><b>Space</b> dive</p>';if(how[3])how[3].innerHTML='<h3>🎯 PASSING</h3><p>Receivers are labeled <b>A, S, D, F</b>. Press the matching key while the QB has the ball. Defenses rotate between Cover 2, Cover 3, Cover 4, and Cover 2 Man.</p>'};
+C.updateMenu=()=>{C.$('#menuBest').textContent=C.records.bestScore.toLocaleString();C.$('#menuStreak').textContent=C.records.bestStreak;C.$('#menuWins').textContent=C.records.wins;C.$('#soundBtn').textContent=C.settings.sound?'🔊':'🔇';document.body.classList.toggle('reduced',C.settings.motion);C.$('#touchControls').style.display=C.settings.touch?'flex':'none'};
+C.makeScenario=(kind='start',setup=null)=>{C.mode=kind;const opp=C.pick(C.OPP),stad=C.pick(C.STADIUMS),weather=C.pick(['CLEAR','CLEAR','NIGHT','RAIN','LIGHT SNOW']);let diff=setup?.diff??C.pick([2,3,4,5,6]),time=setup?.time??Math.round(C.rand(40,116)),yard=setup?.yard??Math.round(C.rand(12,45)),timeouts=setup?.timeouts??Math.floor(C.rand(0,3));if(kind==='streak'){time=Math.max(25,time-C.records.currentStreak*4);yard=Math.max(5,yard-C.records.currentStreak*2)}const base=Math.floor(C.rand(14,28)),user=base,cpu=base+diff;C.scenario={kind,opp,stad,weather,diff,time,yard,timeouts,user,cpu,down:setup?.down||1,toGo:setup?.toGo||10,difficulty:setup?.forceDifficulty||C.settings.difficulty};C.$('#scenarioScore').textContent=diff===0?`TIED ${user}–${cpu}`:`YOU TRAIL ${cpu}–${user}`;C.$('#scenarioClock').textContent=C.fmtTime(time);C.$('#scenarioBall').textContent=C.fieldLabel(yard);C.$('#scenarioTO').textContent=timeouts;C.$('#scenarioWeather').textContent=weather;C.$('#scenarioDefense').textContent=C.scenario.difficulty.toUpperCase();C.$('#scenarioOpponentIcon').textContent=opp.icon;C.$('#scenarioOpponent').textContent=opp.name.toUpperCase();C.$('#scenarioFlavor').textContent=kind==='streak'?`Streak ${C.records.currentStreak}. Keep it alive.`:'Go win the game.';C.show('scenario')};
+C.setupChallenges=()=>{const g=C.$('#challengeGrid');g.innerHTML='';C.CHALLENGES.forEach(ch=>{const b=document.createElement('button');b.className='challengeCard';b.innerHTML=`<b>${ch.title}</b><span>${ch.desc}</span>`;b.onclick=()=>{C.currentChallenge=ch;C.makeScenario('challenge',ch.setup)};g.append(b)})};
+C.choosePlayDeck=()=>{let d=[...C.PLAYS].sort(()=>Math.random()-.5).slice(0,4);if(C.game.clock<12&&!d.some(x=>x.id==='out'||x.id==='hail'))d[0]=C.PLAYS.find(x=>x.id==='out');if(C.game.down===4&&C.game.toGo>12)d[0]=C.PLAYS.find(x=>x.id==='verts');return d};
+C.drawPlayDiagram=(cv,p)=>{const x=cv.getContext('2d');cv.width=180;cv.height=55;x.strokeStyle='#6d82a7';x.lineWidth=2;x.beginPath();x.moveTo(12,46);x.lineTo(168,46);x.stroke();if(p.type==='run'){x.strokeStyle='#ffc84a';x.lineWidth=4;x.beginPath();x.moveTo(90,46);x.quadraticCurveTo(p.run==='outside'?145:90,30,p.run==='outside'?155:90,7);x.stroke();return}x.strokeStyle='#c8ff4f';x.lineWidth=2;const starts=[35,70,110,145];p.routes.forEach((r,i)=>{const ex=C.clamp(starts[i]+r[0]*2.2,8,172),ey=C.clamp(46-r[1]*.8,4,45);x.beginPath();x.moveTo(starts[i],46);x.lineTo(ex,ey);x.stroke()})};
+C.renderPlaybook=()=>{const g=C.game;g.deck=C.choosePlayDeck();g.selected=null;const w=C.$('#playCards');w.innerHTML='';g.deck.forEach((p,i)=>{const b=document.createElement('button');b.className='playCard';b.innerHTML=`<b>${i+1}. ${p.name}</b><span>${p.desc}</span><canvas></canvas>`;b.onclick=()=>C.selectPlay(i);w.append(b);C.drawPlayDiagram(b.querySelector('canvas'),p)});C.$('#playOverlay').classList.remove('hidden','play-selected');C.$('#fieldPositionText').textContent=C.fieldLabel(g.ballY);C.$('#clockState').textContent=g.clockRunning?'CLOCK RUNNING':'CLOCK STOPPED';C.$('#passHotfix')?.classList.add('hidden');C.$('#coverageBadge')?.classList.add('hidden');C.updateClockActions?.()};
+C.selectPlay=i=>{const g=C.game;if(!g||g.phase!=='presnap'||!g.deck[i])return;g.selected=g.deck[i];C.$$('.playCard').forEach((x,n)=>x.classList.toggle('selected',n===i));C.$('#playName').textContent=g.selected.name;C.$('#hotfixPlayName').textContent=g.selected.name;C.$('#playOverlay').classList.add('play-selected');C.beep()};
+C.makePlayer=(x,y,role,idx=0)=>({x,y,role,idx,speed:role==='QB'?6.3:role==='RB'?7.5:7.1+(idx===0?.8:idx===2?.55:0),hasBall:false,controlled:false,stunned:0});
+C.initGame=()=>{const s=C.scenario;C.game={phase:'presnap',clock:s.time,clockRunning:false,userScore:s.user,cpuScore:s.cpu,ballY:s.yard,los:s.yard,down:s.down,toGo:s.toGo,firstDown:Math.min(100,s.yard+s.toGo),timeouts:s.timeouts,driveScore:0,plays:0,passYds:0,rushYds:0,attempts:0,completions:0,consecutive:0,longest:0,fourthAtt:0,fourthConv:0,players:[],defenders:[],ball:null,carrier:null,selected:null,deck:[],playStartY:s.yard,weather:s.weather,stad:s.stad,opp:s.opp,ended:false,practice:s.kind==='practice',jukeUntil:0,spinUntil:0,diveUntil:0,optionWindow:0,kick:null,coverage:null,cameraMin:C.clamp(s.yard-10,0,38),twoPoint:false};C.$('#userScore').textContent=C.game.userScore;C.$('#oppScore').textContent=C.game.cpuScore;C.$('#oppShort').textContent=s.opp.short;C.$('#driveStreak').textContent=C.records.currentStreak;C.renderPlaybook();C.updateHud?.();C.show('game');C.last=performance.now();C.raf=requestAnimationFrame(C.loop)};
+})();
